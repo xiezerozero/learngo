@@ -1,0 +1,7 @@
+{
+  "driver_name":"mysql",
+  "user":"admin",
+  "password":"123456",
+  "addr":"192.168.59.130:3306",
+  "dbname":"panda"
+}
