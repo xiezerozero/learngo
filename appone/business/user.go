@@ -13,7 +13,7 @@ type User struct {
 	Base
 }
 
-
+// 单个用户
 func (this *User) UserBusiness(writer http.ResponseWriter, r *http.Request)  {
 	u, e := doUserBusiness(r)
 	if e != nil {
@@ -28,6 +28,7 @@ func (this *User) UserBusiness(writer http.ResponseWriter, r *http.Request)  {
 	this.json(writer)
 }
 
+// 用户列表
 func (this *User) UserList(writer http.ResponseWriter, r *http.Request)  {
 	u, e := doUserList(r)
 	if e != nil {
@@ -42,10 +43,21 @@ func (this *User) UserList(writer http.ResponseWriter, r *http.Request)  {
 	this.json(writer)
 }
 
+func (this *User) UserTx(writer http.ResponseWriter, r *http.Request) {
+
+	data := models.GetUserList()
+	this.status = 1
+	this.msg = ""
+	this.data = data
+	this.json(writer)
+}
+
 func doUserList(r *http.Request) ([]models.User, error) {
 	options := map[string]string{}
 	agestring := r.URL.Query().Get("age")
 	utypestring := r.URL.Query().Get("type")
+	page := r.URL.Query().Get("page")
+	pageSize := r.URL.Query().Get("pageSize")
 	_, e := strconv.Atoi(agestring)
 	if e == nil {
 		options["age"] = agestring
@@ -53,6 +65,12 @@ func doUserList(r *http.Request) ([]models.User, error) {
 	_, e = strconv.Atoi(utypestring)
 	if e == nil {
 		options["type"] = utypestring
+	}
+	if _, e = strconv.Atoi(page); e == nil {
+		options["page"] = page
+	}
+	if _, e = strconv.Atoi(pageSize); e == nil {
+		options["pageSize"] = pageSize
 	}
 	users, e := models.GetUsers(options)
 	return users, e
