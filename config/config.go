@@ -1,20 +1,20 @@
 package config
 
 import (
-	"os"
-	"log"
-	"io/ioutil"
-	"encoding/json"
-	"github.com/go-redis/redis"
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"github.com/go-redis/redis"
 	_ "github.com/go-sql-driver/mysql"
+	"io/ioutil"
+	"log"
+	"os"
 )
 
 type config struct {
-	Addr string
+	Addr     string
 	Password string
-	Db int
+	Db       int
 }
 
 func InitRedisClient(fileName string) *redis.Client {
@@ -30,18 +30,18 @@ func InitRedisClient(fileName string) *redis.Client {
 	json.Unmarshal(b, &config)
 
 	redisClient := redis.NewClient(&redis.Options{
-		Addr: config.Addr,
-		Password:config.Password,
-		DB: config.Db,
+		Addr:     config.Addr,
+		Password: config.Password,
+		DB:       config.Db,
 	})
 	return redisClient
 }
 
 type dbConfig struct {
-	DriverName string `json:"driver_name"`
+	DriverName     string `json:"driver_name"`
 	User, Password string
-	Addr string
-	DbName string
+	Addr           string
+	DbName         string
 }
 
 func InitMysqlConnection(fileName string) *sql.DB {
@@ -53,7 +53,7 @@ func InitMysqlConnection(fileName string) *sql.DB {
 	b, _ := ioutil.ReadAll(configFile)
 	json.Unmarshal(b, &config)
 
-	db ,e := sql.Open(config.DriverName, fmt.Sprintf("%s:%s@tcp(%s)/%s", config.User, config.Password, config.Addr, config.DbName))
+	db, e := sql.Open(config.DriverName, fmt.Sprintf("%s:%s@tcp(%s)/%s", config.User, config.Password, config.Addr, config.DbName))
 	if e != nil {
 		panic("连不上数据库")
 	}

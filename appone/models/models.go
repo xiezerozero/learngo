@@ -1,44 +1,51 @@
 package models
 
 import (
+	"config"
 	"database/sql"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/go-redis/redis"
-	"appone/config"
 	"log"
 	"strconv"
-	"fmt"
 )
-
 
 var dbConn *sql.DB
 var redisConn *redis.Client
 var GAMEINFO_REDIS_KEY string = "game_info"
+
+const GAME_UPLOAD_REDIS_KEY = "game_upload"
 
 func init() {
 	dbConn = config.InitMysqlConnection("db.json")
 	redisConn = config.InitRedisClient("redis.json")
 }
 
+type Game struct {
+	Name   string `json:"name"`
+	Minute int    `json:"minute"`
+}
+
 type User struct {
-	Id int `json:"id"`
-	Name string `json:"name"`
+	Id     int    `json:"id"`
+	Name   string `json:"name"`
 	Passwd string `json:"passwd,omitempty"`
-	Age int `json:"age"`
+	Age    int    `json:"age"`
 }
 
 type Feedback struct {
-	Id int `json:"id"`
-	NetbarId int `json:"netbar_id"`
+	Id         int    `json:"id"`
+	NetbarId   int    `json:"netbar_id"`
 	NetbarName string `json:"netbar_name"`
-	CreateTime int `json:"create_time"`
-	Content string `json:"content"`
+	CreateTime int    `json:"create_time"`
+	Content    string `json:"content"`
 }
 
 type ApiResponse struct {
-	Status int `json:"status"`
-	Msg string `json:"msg"`
-	Data interface{} `json:"data"`
+	Status int         `json:"status"`
+	Msg    string      `json:"msg"`
+	Data   interface{} `json:"data"`
 }
 
 func GetUserById(userId int) (User, error) {
@@ -50,7 +57,7 @@ func GetUserById(userId int) (User, error) {
 	defer stm.Close()
 	var id, age int
 	var name string
-	e = stm.QueryRow(userId).Scan(&id, &name,&age)
+	e = stm.QueryRow(userId).Scan(&id, &name, &age)
 	if e == sql.ErrNoRows {
 		return u, errors.New("找不到记录")
 	}
@@ -70,7 +77,7 @@ func AddNewUser(u User) (User, error) {
 		return u, e
 	}
 	defer stm.Close()
-	result , e := stm.Exec(u.Name, u.Age)
+	result, e := stm.Exec(u.Name, u.Age)
 	if e != nil {
 		return u, e
 	}
@@ -101,7 +108,7 @@ func GetUsers(options map[string]string) ([]User, error) {
 		pageSize, _ = strconv.Atoi(userPageSize)
 	}
 	selectSql += " limit %d, %d "
-	selectSql = fmt.Sprintf(selectSql, pageSize * (page - 1), pageSize)
+	selectSql = fmt.Sprintf(selectSql, pageSize*(page-1), pageSize)
 	log.Println(selectSql)
 	stm, e := dbConn.Prepare(selectSql)
 	if e != nil {
@@ -113,7 +120,7 @@ func GetUsers(options map[string]string) ([]User, error) {
 		return u, e
 	}
 	defer rows.Close()
-	var id ,age int
+	var id, age int
 	var name string
 	for rows.Next() {
 		e = rows.Scan(&id, &name, &age)
@@ -121,9 +128,9 @@ func GetUsers(options map[string]string) ([]User, error) {
 			log.Fatal(e)
 		}
 		u = append(u, User{
-			Id: id,
-			Name:name,
-			Age:age,
+			Id:   id,
+			Name: name,
+			Age:  age,
 		})
 	}
 	if e = rows.Err(); e != nil {
@@ -197,12 +204,17 @@ func GetUserList() (data []map[string]string) {
 
 func PutGameInfoInRedis(gameInfo map[string]int) {
 
+	var game Game
 	for name, minute := range gameInfo {
 		// redis.hincrby 不管是否存在该field
-		_, e := redisConn.HIncrBy(GAMEINFO_REDIS_KEY, name, int64(minute)).Result()
-		if e != nil {
-			log.Println("field " + name + " 写入失败:", e.Error())
-		}
+		//_, e := redisConn.HIncrBy(GAMEINFO_REDIS_KEY, name, int64(minute)).Result()
+		//if e != nil {
+		//	log.Println("field " + name + " 写入失败:", e.Error())
+		//}
+		game.Name = name
+		game.Minute = minute
+		b, _ := json.Marshal(game)
+		redisConn.LPush(GAME_UPLOAD_REDIS_KEY, string(b))
 	}
 
 }

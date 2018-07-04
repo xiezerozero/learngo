@@ -1,16 +1,15 @@
 package business
 
 import (
-	"net/http"
-	"strings"
-	"strconv"
 	"appone/models"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 type Game struct {
 	Base
 }
-
 
 func (this *Game) Upload(writer http.ResponseWriter, r *http.Request) {
 
@@ -34,7 +33,7 @@ func uploadGame(r *http.Request) {
 		if infos[0] == "" {
 			continue
 		}
-		minute,e := strconv.Atoi(infos[1])
+		minute, e := strconv.Atoi(infos[1])
 		if e != nil {
 			continue
 		}

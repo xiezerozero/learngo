@@ -1,12 +1,12 @@
 package business
 
 import (
-	"net/http"
 	"appone/models"
-	"strings"
-	"strconv"
-	"github.com/astaxie/beego/validation"
 	"errors"
+	"github.com/astaxie/beego/validation"
+	"net/http"
+	"strconv"
+	"strings"
 )
 
 type User struct {
@@ -14,7 +14,7 @@ type User struct {
 }
 
 // 单个用户
-func (this *User) UserBusiness(writer http.ResponseWriter, r *http.Request)  {
+func (this *User) UserBusiness(writer http.ResponseWriter, r *http.Request) {
 	u, e := doUserBusiness(r)
 	if e != nil {
 		this.status = 0
@@ -29,7 +29,7 @@ func (this *User) UserBusiness(writer http.ResponseWriter, r *http.Request)  {
 }
 
 // 用户列表
-func (this *User) UserList(writer http.ResponseWriter, r *http.Request)  {
+func (this *User) UserList(writer http.ResponseWriter, r *http.Request) {
 	u, e := doUserList(r)
 	if e != nil {
 		this.status = 0
@@ -76,11 +76,10 @@ func doUserList(r *http.Request) ([]models.User, error) {
 	return users, e
 }
 
-
 // 处理业务
 func doUserBusiness(r *http.Request) (models.User, error) {
 	var u models.User
-	if strings.ToLower(r.Method) == "get" {	//select
+	if strings.ToLower(r.Method) == "get" { //select
 		idstring := r.URL.Query().Get("id")
 		userId, e := strconv.Atoi(idstring)
 		if e != nil {
@@ -93,7 +92,7 @@ func doUserBusiness(r *http.Request) (models.User, error) {
 				return u, nil
 			}
 		}
-	} else {	//post:  insert/update
+	} else { //post:  insert/update
 		r.ParseForm()
 		valid := validation.Validation{}
 		name := r.Form.Get("name")
@@ -115,4 +114,3 @@ func doUserBusiness(r *http.Request) (models.User, error) {
 		}
 	}
 }
-

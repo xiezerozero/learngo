@@ -1,9 +1,9 @@
 package library
 
 import (
-	"net/http"
 	"appone/models"
 	"encoding/json"
+	"net/http"
 )
 
 func Json(writer http.ResponseWriter, apiResponse models.ApiResponse) {
@@ -14,4 +14,3 @@ func Json(writer http.ResponseWriter, apiResponse models.ApiResponse) {
 	writer.Header().Add("Content-type", "application/json")
 	writer.Write(resByte)
 }
-
